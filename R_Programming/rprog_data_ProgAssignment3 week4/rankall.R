@@ -11,21 +11,26 @@ rankall <- function(outcome, num = "best") {
       } else {
             stop("invalid outcome")
       }
+
+      ## Get all unique states
+      all_states <- sort(unique(subdata$State))
+
       ## For each state, find the hospital of the given rank
       ## remove na
-      for (i in 1:nrow(subdata)){
-            if (subdata[i,3] == "Not Available"){
-                  subdata[i,3] <- NA
-            }
-      }
+      subdata[subdata[,3] == "Not Available", 3] <- NA
+
       good <- complete.cases(subdata[,3])
       subdata <- subdata[good,]
-      ## split by state name
+      ## split by state name, ensuring all states are kept by using factor
       subdata[,3] <- as.numeric(subdata[,3])
-      s <- split(subdata,subdata$State)
-      ans <- lapply(s,function(x,num){
+      s <- split(subdata, factor(subdata$State, levels = all_states))
+
+      ans <- lapply(s, function(x, num){
+            if(nrow(x) == 0) {
+                  return(NA)
+            }
             ## order data by death rate and hospital names
-            x <- x[order(x[,3],x[,1]),]
+            x <- x[order(x[,3], x[,1]),]
             # return value
             if (num == "best"){
                   return(x$Hospital.Name[1])
