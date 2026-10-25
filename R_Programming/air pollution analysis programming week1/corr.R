@@ -1,14 +1,18 @@
 corr <- function(directory, threshold = 0) {
-	## input files
-	filePath <- list.files(directory, full.name = TRUE)
-	tmp <- vector(mode = "list", length= length(filePath))
-	tmp <- lapply(filePath, read.csv)
-	airpollutant <- do.call(rbind, tmp)
 	## subset the completely cases above threshold
-	comcases <- complete("specdata") 
+	comcases <- complete(directory)
 	aboveThreshold <- comcases[which(comcases$nobs > threshold),]
 	aboveID <- aboveThreshold$id
-    # print(aboveID)
+
+	if (length(aboveID) == 0) {
+        return(numeric(0))
+    }
+
+	## input files for only above threshold
+	filePath <- file.path(directory, sprintf("%03d.csv", aboveID))
+	tmp <- lapply(filePath, read.csv)
+	airpollutant <- do.call(rbind, tmp)
+
 	subcases <- data.frame()
 	for (i in aboveID){
 		subcases <- rbind(subcases,airpollutant[which(airpollutant$ID == i),])		

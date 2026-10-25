@@ -3,9 +3,8 @@ best <- function(state, outcome) {
       outcomedata <- read.csv("outcome-of-care-measures.csv", colClasses = "character")
       ## Check that state and outcome are valid
       # check the state
-      stateName <- outcomedata$State
-      tem <- grepl(state,stateName)
-      if (sum(tem) == 0){
+      stateName <- unique(outcomedata$State)
+      if (!(state %in% stateName)){
             stop("invalid state")
       }
       # check the outcome
@@ -19,17 +18,16 @@ best <- function(state, outcome) {
             stop("invalid outcome")
       }
       ## Return hospital name in that state with lowest 30-day death
-      x <- character()
-      subdata[,2] <- as.numeric(subdata[,2])
+      subdata[,2] <- suppressWarnings(as.numeric(subdata[,2]))
       good <- complete.cases(subdata)
       subdata <- subdata[good,]
-      min <- min(subdata[,2])
-      m <- nrow(subdata)
-      for (i in 1:m){
-            if (subdata[i,2] == min){
-                  x <- subdata[i,1]
-            }
-      }
+
+      min_val <- min(subdata[,2])
+      best_hospitals <- subdata[subdata[,2] == min_val, 1]
+
+      ## return first alphabetically
+      x <- sort(best_hospitals)[1]
+
       ## rate
       x
 }

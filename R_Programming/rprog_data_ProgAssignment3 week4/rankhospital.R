@@ -3,9 +3,8 @@ rankhospital <- function(state, outcome, num = "best") {
       outcomedata <- read.csv("outcome-of-care-measures.csv", colClasses = "character")
       ## Check that state and outcome are valid
       # check the state
-      stateName <- outcomedata$State
-      tem <- grepl(state,stateName)
-      if (sum(tem) == 0){
+      stateName <- unique(outcomedata$State)
+      if (!(state %in% stateName)){
             stop("invalid state")
       }
       # check the outcome
@@ -19,16 +18,12 @@ rankhospital <- function(state, outcome, num = "best") {
             stop("invalid outcome")
       }
       ## Return hospital name in that state with the given rank
-      for (i in 1:nrow(subdata)){
-            if (subdata[i,2] == "Not Available"){
-                  subdata[i,2] <- NA
-            }
-      }
+      subdata[subdata[,2] == "Not Available", 2] <- NA
+
       good <- complete.cases(subdata[,2])
       subdata <- subdata[good,]
       subdata[,2] <- as.numeric(subdata[,2])
       rankeddata <- subdata[order(subdata[,2],subdata$Hospital.Name),]
-      rankeddata[,2] <- as.numeric(rankeddata[,2])
       x <- character()
       if (num == "best"){
             x <- rankeddata[1,1]
@@ -37,5 +32,5 @@ rankhospital <- function(state, outcome, num = "best") {
       } else {
             x <- rankeddata[num,1]
       }
-      print(x)
+      x
 }
